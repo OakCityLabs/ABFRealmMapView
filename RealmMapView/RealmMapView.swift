@@ -230,7 +230,7 @@ open class RealmMapView: MKMapView {
             currentAnnotations = NSMutableSet(array: self.annotations)
         }
         
-        let newAnnotations = annotations.union(extraAnnotations)
+        let newAnnotations = annotations
         
         let toKeep = NSMutableSet(set: currentAnnotations)
         
@@ -265,6 +265,14 @@ open class RealmMapView: MKMapView {
                             
                             strongSelf.addAnnotations(addAnnotations)
                             strongSelf.removeAnnotations(removeAnnotations)
+                            
+                            let existing = Set(strongSelf.annotations)
+                            for annotation in strongSelf.extraAnnotations {
+                                if !existing.contains(annotation) {
+                                    strongSelf.addAnnotation(annotation)
+                                }
+                            }
+                            
                         }
                     }
                 }
