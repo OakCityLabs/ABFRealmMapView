@@ -266,13 +266,14 @@ open class RealmMapView: MKMapView {
                             strongSelf.addAnnotations(addAnnotations)
                             strongSelf.removeAnnotations(removeAnnotations)
                             
-                            let existing = Set<MKAnnotation>(strongSelf.annotations)
-                            for annotation in strongSelf.extraAnnotations {
-                                if !existing.contains(annotation) {
-                                    strongSelf.addAnnotation(annotation)
+                            for extraAnnotation in strongSelf.extraAnnotations {
+                                if !strongSelf.annotations.contains(where: { (annotation) -> Bool in
+                                    return compMKAnnotations(extraAnnotation,
+                                                             annotation)
+                                }) {
+                                    strongSelf.addAnnotation(extraAnnotation)
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -436,8 +437,10 @@ extension LocationSafeRealmObject {
     }
 }
 
-extension MKAnnotation: Hashable {
-    var hashValue: Int {
-        return coordinate.longitude.hashValue + coordinate.latitude.hashValue
-    }
+fileprivate func compMKAnnotations(_ a: MKAnnotation, _ b: MKAnnotation) -> Bool {
+    return
+        a.coordinate.latitude == b.coordinate.latitude &&
+            a.coordinate.longitude == b.coordinate.longitude &&
+            (a.title ?? "<missing title>") == (b.title ?? "<missing title>") &&
+            (a.subtitle ?? "<missing subtitle>") == (b.subtitle ?? "<missing subtitle>")
 }
