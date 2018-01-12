@@ -117,6 +117,9 @@ open class RealmMapView: MKMapView {
     /// along with the generated predicate for the location bounding box.
     open var basePredicate: NSPredicate?
     
+    // A list of MKAnnotation objects that are always shown
+    open var extraAnnotations = [MKAnnotation]()
+
     // MARK: Functions
     
     /// Performs a fresh fetch for Realm objects based on the current visible map rect
@@ -227,7 +230,7 @@ open class RealmMapView: MKMapView {
             currentAnnotations = NSMutableSet(array: self.annotations)
         }
         
-        let newAnnotations = annotations
+        let newAnnotations = annotations.union(extraAnnotations)
         
         let toKeep = NSMutableSet(set: currentAnnotations)
         
