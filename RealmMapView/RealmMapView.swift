@@ -264,7 +264,17 @@ open class RealmMapView: MKMapView {
                         if let removeAnnotations = toRemove.allObjects as? [MKAnnotation] {
                             
                             strongSelf.addAnnotations(addAnnotations)
-                            strongSelf.removeAnnotations(removeAnnotations)
+                            
+                            for removeAnnotation in removeAnnotations {
+                                // only remove annotations not in extraAnnotations
+                                if !strongSelf.extraAnnotations.contains(where: { (annotation) -> Bool in
+                                    return compMKAnnotations(removeAnnotation,
+                                                             annotation)
+                                    
+                                }){
+                                    strongSelf.removeAnnotation(removeAnnotation)
+                                }
+                            }
                             
                             for extraAnnotation in strongSelf.extraAnnotations {
                                 if !strongSelf.annotations.contains(where: { (annotation) -> Bool in
