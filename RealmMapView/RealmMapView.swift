@@ -213,7 +213,7 @@ open class RealmMapView: MKMapView {
     
     fileprivate let ABFAnnotationViewReuseId = "ABFAnnotationViewReuseId"
     
-    fileprivate let mapQueue: OperationQueue = {
+    open let mapQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
         
