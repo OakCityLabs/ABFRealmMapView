@@ -216,18 +216,30 @@ open class RealmMapView: MKMapView {
     open let mapQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
-        
+        queue.name = "REALM_MAP_QUEUE"
         return queue
     }()
     
     weak fileprivate var externalDelegate: MKMapViewDelegate?
     
+    func getAnnotations() -> [MKAnnotation] {
+        var annots = [MKAnnotation]()
+        objc_sync_enter(self)
+        for annot in annotations {
+            annots.append(annot)
+        }
+        objc_sync_exit(self)
+        return annots
+    }
+    
     fileprivate func addAnnotationsToMapView(_ annotations: Set<ABFAnnotation>) {
+        
+        let originalAnnots = getAnnotations()
         var currentAnnotations: NSMutableSet!
-        if self.annotations.count == 0 {
+        if originalAnnots.count == 0 {
             currentAnnotations = NSMutableSet()
         } else {
-            currentAnnotations = NSMutableSet(array: self.annotations)
+            currentAnnotations = NSMutableSet(array: originalAnnots)
         }
         
         let newAnnotations = annotations
