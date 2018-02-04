@@ -98,7 +98,10 @@ open class RealmMapView: MKMapView {
     ///
     /// Default is 20, which means clustering will occur at every zoom level if clusterAnnotations is YES
     open var maxZoomLevelForClustering: ZoomLevel = 20
-    
+
+    // Minimum height of viewport in meters when autozooming on a single item.
+    open var minAutoZoomHeight: Double = 50_000.0        // 50 KM
+
     /// The limit on how many results from Realm will be added to the map.
     ///
     /// This applies whether or not clustering is enabled.
@@ -289,6 +292,16 @@ open class RealmMapView: MKMapView {
         }
         
         var region = MKCoordinateRegionForMapRect(rect)
+        
+        if safeObjects.count < 2 {
+            // don't zoom too far for a single item
+            let metersPerDegreeLatitude = 111_000.0        // 111 KM per degree
+            let currentHeight = region.span.latitudeDelta * metersPerDegreeLatitude
+            if currentHeight < minAutoZoomHeight {
+                region.span.latitudeDelta = minAutoZoomHeight / metersPerDegreeLatitude
+            }
+        
+        }
         
         region = self.regionThatFits(region)
         
