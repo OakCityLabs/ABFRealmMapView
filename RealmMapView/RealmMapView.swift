@@ -223,49 +223,49 @@ open class RealmMapView: MKMapView {
     weak fileprivate var externalDelegate: MKMapViewDelegate?
     
     fileprivate func addAnnotationsToMapView(_ annotations: Set<ABFAnnotation>) {
-        var currentAnnotations: NSMutableSet!
-        if self.annotations.count == 0 {
-            currentAnnotations = NSMutableSet()
-        } else {
-            currentAnnotations = NSMutableSet(array: self.annotations)
-        }
-        
-        let newAnnotations = annotations
-        
-        let toKeep = NSMutableSet(set: currentAnnotations)
-        
-        toKeep.intersect(newAnnotations as Set<NSObject>)
-        
-        let toAdd = NSMutableSet(set: newAnnotations)
-        
-        toAdd.minus(toKeep as Set<NSObject>)
-        
-        let toRemove = NSMutableSet(set: currentAnnotations)
-        
-        toRemove.minus(newAnnotations)
-        
-        let safeObjects = self.fetchedResultsController.safeObjects
-        
         OperationQueue.main.addOperation({ [weak self] () -> Void in
+
+            guard let strongSelf = self else {
+                return
+            }
             
-            if let strongSelf = self {
+            var currentAnnotations: NSMutableSet!
+            if strongSelf.annotations.count == 0 {
+                currentAnnotations = NSMutableSet()
+            } else {
+                currentAnnotations = NSMutableSet(array: strongSelf.annotations)
+            }
+            
+            let newAnnotations = annotations
+            
+            let toKeep = NSMutableSet(set: currentAnnotations)
+            
+            toKeep.intersect(newAnnotations as Set<NSObject>)
+            
+            let toAdd = NSMutableSet(set: newAnnotations)
+            
+            toAdd.minus(toKeep as Set<NSObject>)
+            
+            let toRemove = NSMutableSet(set: currentAnnotations)
+            
+            toRemove.minus(newAnnotations)
+            
+            let safeObjects = strongSelf.fetchedResultsController.safeObjects
+            
+            if strongSelf.zoomOnFirstRefresh && safeObjects.count > 0 {
                 
-                if strongSelf.zoomOnFirstRefresh && safeObjects.count > 0 {
+                strongSelf.zoomOnFirstRefresh = false
+                
+                let region = strongSelf.coordinateRegion(safeObjects)
+                
+                strongSelf.setRegion(region, animated: true)
+            } else {
+                if let addAnnotations = toAdd.allObjects as? [MKAnnotation] {
                     
-                    strongSelf.zoomOnFirstRefresh = false
-                    
-                    let region = strongSelf.coordinateRegion(safeObjects)
-                    
-                    strongSelf.setRegion(region, animated: true)
-                }
-                else {
-                    if let addAnnotations = toAdd.allObjects as? [MKAnnotation] {
+                    if let removeAnnotations = toRemove.allObjects as? [MKAnnotation] {
                         
-                        if let removeAnnotations = toRemove.allObjects as? [MKAnnotation] {
-                            
-                            strongSelf.addAnnotations(addAnnotations)
-                            strongSelf.removeAnnotations(removeAnnotations)
-                        }
+                        strongSelf.addAnnotations(addAnnotations)
+                        strongSelf.removeAnnotations(removeAnnotations)
                     }
                 }
             }
